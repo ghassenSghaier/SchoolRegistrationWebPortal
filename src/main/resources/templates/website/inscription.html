@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head">
+</head>
+<script src="https://use.fontawesome.com/c0c323679c.js"></script>
+
+
+<body>
+
+<!--Navbar-->
+<nav th:replace="fragments/header :: nav"></nav>
+
+<div class="container" style="padding-bottom:25px;">
+    <div class="row">
+        <div class="card col-6 mx-auto" style="width: 20rem; margin-top: 80px;">
+            <div class="card-body">
+                <h4 class="card-title">Inscription form:</h4>
+                <!--Form-->
+                <form enctype="multipart/form-data" th:action="@{/submit-candidature}" th:object="${candidatureDto}"  th:method="post" method="post">
+                    <ul class="global-errors" th:if="${#fields.hasErrors('global')}">
+                        <li class="text-danger" th:each="err : ${#fields.errors('global')}" th:text="${err}">Input is incorrect</li>
+                    </ul>
+                    <div class="form-group">
+                        <label for="Name">Name</label>
+                        <input type="text" class="form-control" th:field="*{name}" id="name" placeholder="Enter name">
+                        <p class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="Surname">Surname</label>
+                        <input type="text" class="form-control" th:field="*{surname}" id="surname" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}"></p>
+                    </div>                    
+                    <div class="form-group">
+                        <label for="Email">Email address</label>
+                        <input th:type="email" type="email" class="form-control" th:field="*{email}" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                        <!--<span class="text-danger"  th:text="${alreadyRegisteredMessage}"></span>-->
+                        <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                    </div>                                        
+                     <div class="form-group">
+                        <label for="Files">Candidature</label>
+                        <input th:type="file" type="file" class="form-control" th:field="*{files}" id="Files" multiple>
+<!--                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>-->
+                        <!--<span class="text-danger"  th:text="${alreadyRegisteredMessage}"></span>-->
+                        <span class="text-danger" th:if="${#fields.hasErrors('files')}" th:errors="*{files}"></span>
+                    </div>                     
+<!--                    <div class="form-group">
+                        <label for="bac">Diplome baccalauréat</label>
+                        <input type="file" class="form-control" th:field="*{dipBac}" id="bac" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('dipBac')}" th:errors="*{dipBac}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="relNotBac">relevé de notes baccalauréat</label>
+                        <input type="file" class="form-control" th:field="*{relNotBac}" id="relNotbac" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('relNotBac')}" th:errors="*{relNotBac}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="bultin1">Bulletin L1</label>
+                        <input type="file" class="form-control" th:field="*{bultin1}" id="bultin1" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('bultin1')}" th:errors="*{bultin1}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="bultin2">Bulletin L2</label>
+                        <input type="file" class="form-control" th:field="*{bultin2}" id="bultin2" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('bultin2')}" th:errors="*{bultin2}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="bultin3">Bulletin L2</label>
+                        <input type="file" class="form-control" th:field="*{bultin3}" id="bultin3" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('bultin3')}" th:errors="*{bultin3}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="rapport1">Rapport du premier stage</label>
+                        <input type="file" class="form-control" th:field="*{rapport1}" id="rapport1" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('rapport1')}" th:errors="*{rapport1}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="rapport2">Rapport du deuxième stage</label>
+                        <input type="file" class="form-control" th:field="*{rapport2}" id="rapport2" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('rapport2')}" th:errors="*{rapport2}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="letRecom">Lettre de recommandation</label>
+                        <input type="file" class="form-control" th:field="*{lettreRecom}" id="letRecom" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('lettreRecom')}" th:errors="*{lettreRecom}"></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="diplome">Diplome final</label>
+                        <input type="file" class="form-control" th:field="*{diplome}" id="diplome" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('diplome')}" th:errors="*{diplome}"></p>
+                    </div>
+                     <div class="form-group">
+                        <label for="attesReu">Attestation de réussite finale</label>
+                        <input type="file" class="form-control" th:field="*{attesReu}" id="attesReu" placeholder="Enter surname">
+                        <p class="text-danger" th:if="${#fields.hasErrors('attesReu')}" th:errors="*{attesReu}"></p>
+                    </div>                                    -->
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>                
+            </div>
+        </div>
+    </div>
+</div>
+<footer th:replace="fragments/footer :: footer"></footer>
+<div th:replace="fragments/jsScripts :: scripts"></div>
+
+</body>
+</html>

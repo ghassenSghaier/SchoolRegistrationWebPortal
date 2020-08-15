@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head">
+</head>
+<body>
+
+<nav th:replace="fragments/header :: nav"></nav>
+
+<div id="admin-section">
+    <div class="admin-inner">
+        <div class="container">
+            <div class="d-flex flex-row">
+
+                <!--Admin sidebar-->
+                <div th:replace="fragments/adminSidebar :: admin-sidebar"></div>
+
+                <!--Admin content-->
+                <div id="admin-content">
+                    <div class="row mb-2">
+                        <div class="col-lg-12 d-flex flex-wrap align-content-start">
+                            <!--Search user-->
+                            <div class="row col-lg-12 d-flex flex-nowrap pb-2">
+                                <div class="input-group">
+                                    <select class="custom-select" id="search-user-dropdown" onchange="saveSearchParameters(this);">
+                                        <option value="ID">ID</option>
+                                        <option value="Name">Name</option>
+                                        <option value="Surname">Surname</option>
+                                        <option value="Email">Email</option>
+                                    </select>
+                                    <input type="text" id="searchUserBar"
+                                           onkeyup='saveSearchParameters(this);'
+                                           placeholder="Search for candidatures.." class="form-control"
+                                           aria-label="Text input with dropdown button">
+                                </div>
+                                <button type="button" class="btn btn-secondary ml-2" onclick="searchUserByProperty()">Search</button>
+                            </div>
+
+                            <div class="row col-lg-12">
+                                <!--Table with users-->
+                                <table class="table table-striped table-responsive" id="user-table">
+                                    <thead class="thead">
+                                    <tr>
+                                        <th onclick="sortTable(0)">ID</th>
+                                        <th onclick="sortTable(1)">Name</th>
+                                        <th onclick="sortTable(2)">Surname</th>                                        
+                                        <th onclick="sortTable(3)">Email</th>
+                                        <th onclick="sortTable(4)">Candidature</th>                                       
+                                        <th></th>
+                                        <th></th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="user-table-body">
+                                    <tr th:each="candidature : ${candidatures}">
+                                        <td th:text="${candidature.id}"></td>
+                                        <td th:text="${candidature.name}"></td>
+                                        <td th:text="${candidature.surname}"></td>                                        
+                                        <td th:text="${candidature.email}"></td>
+                                        <td>
+                                            <p th:each="fp,rowStat : ${candidature.filesPath}">
+                                                <a onclick="window.open(${fp},'newwindow','width=300,height=250');return false;" th:href="${fp}" th:text="${fp}"/>
+                                            </p>
+                                        </td>                                                                                
+                                        <td th:switch="${candidature.enabled}">
+                                            <span th:case="true" style="color:green">Enabled</span>
+                                            <span th:case="false" style="color:red">Disabled</span>
+                                        </td>
+                                        <!--Edit user button-->
+                                        <td><a style="text-decoration: none; color:blue"
+                                               th:href="@{/adminPage/candidatures/{id}(id=${candidature.id})}"
+                                               class="editBtn" data-toggle="tooltip"
+                                               data-placement="right" title="Edit candidature">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        </td>
+
+                                        <!--Remove user button-->
+                                        <td>
+                                            <a id="remove-link" style="text-decoration: none; color:red"
+                                               data-toggle='modal' data-target='#deleteModal'
+                                               data-placement="right" title="Remove user"
+                                               th:onclick="'setRowIndexAndUserId(this, ' + ${candidature.id} + ')'">
+                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div th:replace="fragments/deleteUserModal :: delete-user-modal"></div>
+                        </div>
+
+                        <div class="col-lg-3 pl-0">
+                            <!--Delete success message-->
+                            <div id="alert-messages"></div>
+
+                            <!--Save success message-->
+                            <div th:if="${userHasBeenSaved}" class="alert alert-success alert-dismissible fade show"
+                                 role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <strong>Well done!</strong> User has been saved!!!
+                            </div>
+
+                            <!--Update success message-->
+                            <div th:if="${userHasBeenUpdated}" class="alert alert-success alert-dismissible fade show"
+                                 role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                <strong>Well done!</strong> User has been updated!!!
+                            </div>
+
+                            <!--Number format exception message-->
+                            <div th:if="${numberFormatException}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                Please enter a valid number
+                            </div>
+
+                            <!--No matches found message-->
+                            <div th:if="${noMatches}" class='alert alert-info alert-dismissible fade show' role='alert'>
+                                <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                                    <span aria-hidden='true'>&times;</span>
+                                </button>
+                                    Sorry, no matches found for <span th:text="${usersProperty}"></span> = <span th:text="${propertyValue}"></span>
+                            </div>
+                        </div>
+                    </div>                    
+                    <!--Paging-->
+                    <div id="paging-section" class="row" style="margin-top: 10px;">
+
+                        <!--Page size dropdown-->
+                        <div class="form-group col-md-1" th:if="${candidatures.totalPages != 0}">
+
+                            <!--Get pageSizesToShow-->
+                            <div hidden id="pageSizesToShow" th:attr="data-pageSizesToShow = ${pager.pageSizesToShowInJSON}"></div>
+
+                            <select class="form-control pagination" id="pageSizeSelect">
+                                <option th:each="pageSize : ${pageSizes}" th:text="${pageSize}" th:value="${pageSize}"
+                                        th:selected="${pageSize} == ${selectedPageSize}"></option>
+                            </select>
+                        </div>
+
+                        <!--Pages-->
+                        <nav aria-label="Page navigation example" class="form-group col-md-11 pagination-centered">
+                            <ul class="pagination" th:if="${candidatures.totalPages != 0}">
+                                <li th:class="${candidatures.number == 0} ? 'page-item disabled'" class="page-item">
+                                    <a th:if="${not #strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/users(usersProperty=${usersProperty},
+                                       propertyValue=${propertyValue}, pageSize=${selectedPageSize}, page=1)}">
+                                        &laquo;
+                                    </a>
+
+                                    <a th:if="${#strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(pageSize=${selectedPageSize}, page=1)}">
+                                        &laquo;
+                                    </a>
+                                </li>
+                                <li th:class="${candidatures.number == 0} ? 'page-item disabled'" class="page-item">
+                                    <a th:if="${not #strings.isEmpty(propertyValue) }"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(candidaturesProperty=${candidaturesProperty},
+                                       propertyValue=${propertyValue}, pageSize=${selectedPageSize}, page=${candidatures.number})}">
+                                        &larr;
+                                    </a>
+
+                                    <a th:if="${#strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(pageSize=${selectedPageSize}, page=${candidatures.number})}">
+                                        &larr;
+                                    </a>
+                                </li>
+                                <li th:class="${candidatures.number == (page - 1)} ? 'active pointer-disabled'" class="page-item"
+                                    th:each="page : ${#numbers.sequence(pager.startPage, pager.endPage)}">
+                                    <a th:if="${not #strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(candidaturesProperty=${candidaturesProperty},
+                                       propertyValue=${propertyValue}, pageSize=${selectedPageSize}, page=${page})}"
+                                       th:text="${page}">
+                                    </a>
+                                    <a th:if="${#strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(pageSize=${selectedPageSize}, page=${page})}"
+                                       th:text="${page}">
+                                    </a>
+                                </li>
+                                <li th:class="${candidatures.number + 1 == candidatures.totalPages} ? 'page-item disabled'" class="page-item">
+                                    <a th:if="${not #strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(candidaturesProperty=${candidaturesProperty},
+                                       propertyValue=${propertyValue}, pageSize=${selectedPageSize}, page=${candidatures.number + 2})}">
+                                        &rarr;
+                                    </a>
+                                    <a th:if="${#strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(pageSize=${selectedPageSize}, page=${candidatures.number + 2})}">
+                                        &rarr;
+                                    </a>
+                                </li>
+                                <li th:class="${candidatures.number + 1 == candidatures.totalPages} ? 'page-item disabled'" class="page-item">
+                                    <a th:if="${not #strings.isEmpty(propertyValue) }"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(candidaturesProperty=${candidaturesProperty}, propertyValue=${propertyValue},
+                                       pageSize=${selectedPageSize}, page=${candidatures.totalPages})}">
+                                        &raquo;
+                                    </a>
+                                    <a th:if="${#strings.isEmpty(propertyValue)}"
+                                       class="page-link"
+                                       th:href="@{/adminPage/candidatures(pageSize=${selectedPageSize}, page=${candidatures.totalPages})}">
+                                        &raquo;
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+
+<div th:replace="fragments/jsScripts :: scripts"></div>
+
+
+</body>
+</html>

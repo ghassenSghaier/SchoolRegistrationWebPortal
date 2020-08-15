@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head">    
+</head>
+<body>
+<nav th:replace="fragments/header :: nav"></nav>
+
+<div id="admin-section">
+    <div class="admin-inner">
+        <div class="container">
+            <div class="d-flex flex-row">
+                <div th:replace="fragments/adminSidebar :: admin-sidebar"></div>
+                <div id="admin-content">
+                    <form class="admin-form" th:action="@{/adminPage/candidatures/{id}(id=${candidatureUpdateDto.id})}"
+                          th:object="${candidatureUpdateDto}" th th:method="post" method="post">
+                        <ul class="global-errors" th:if="${#fields.hasErrors('global')}">
+                            <li class="text-danger" th:each="err : ${#fields.errors('global')}" th:text="${err}">
+                                Input is incorrect
+                            </li>
+                        </ul>                       
+                       <div class="form-group">
+                            <label for="editedUserRoles">professeurs</label>
+                            <div>
+                                <p th:each="user,rowStat : ${allUsers}">
+                                    <input id="editedUserRoles" type="checkbox" 
+                                           th:field="*{users[__${rowStat.index}__].id}" th:value="${user.id}"/>
+                                    <label th:text="${user.name}">Professeur</label>
+                                </p>
+                            </div>
+                        </div>                
+                        <a class="btn btn-dark" th:href="@{/adminPage/candidatures}">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+<div th:replace="fragments/jsScripts :: scripts"></div>
+
+</body>
+</html>
