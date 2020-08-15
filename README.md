@@ -1,6 +1,6 @@
 # spring-jpa-thymeleaf-bootstrap
 Project in progress:  
--User login and registration web app with admin page
+-Online school registration web application
 
 [Admin details:](https://github.com/Kvark900/spring-jpa-thymleaf-bootstrap/blob/master/src/main/java/com/kemal/spring/configuration/SetupDataLoader.java#L57)  
 email: admin@gmail.com;  
